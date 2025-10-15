@@ -1,0 +1,9 @@
+# Python
+venv/
+__pycache__/
+
+# Secrets
+.env
+
+# VS Code
+.vscode/
