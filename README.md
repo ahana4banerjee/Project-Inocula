@@ -1,32 +1,24 @@
-# Project Inocula 🛡️
+# Project Inocula 
 
 A Digital Immune System Against Misinformation for **Mumbai Hacks 2025**
 
 ---
 
-### 🧠 The Problem
+###  The Problem
 
 Misinformation spreads faster than facts, manipulating public opinion, fueling panic, and eroding trust—especially during crises.  
 Current fact-checking systems are **reactive**, addressing fake news only after it has gone viral and the damage is done.
 
 ---
 
-### 🧩 Our Solution: A Proactive Immune System
+###  Our Solution: A Proactive Immune System
 
 **Project Inocula** is an Agentic AI system that acts like a digital immune system for the internet.  
 Instead of just reacting to lies, it proactively identifies emerging misinformation campaigns, analyzes their psychological tactics, and warns users before they are exposed — building cognitive resistance.
 
 ---
 
-### ✨ Live Demo Links
-
-- **User Dashboard:** [https://your-inocula-dashboard.netlify.app](#)
-- **Admin Dashboard:** [https://your-inocula-admin.netlify.app](#)
-- **Live Backend API:** [https://project-inocula-backend.onrender.com/docs](#)
-
----
-
-### ✅ Features (Hackathon MVP)
+### Features (Hackathon MVP)
 
 Our fully functional prototype demonstrates the end-to-end flow of our system:
 
@@ -41,7 +33,7 @@ Our fully functional prototype demonstrates the end-to-end flow of our system:
 
 ---
 
-### 🛠️ Tech Stack
+### Tech Stack
 
 **Frontend:** React, Chart.js, Chrome Extension SDK (Manifest V3)  
 **Backend:** Python (FastAPI)  
@@ -51,7 +43,7 @@ Our fully functional prototype demonstrates the end-to-end flow of our system:
 
 ---
 
-### 🚀 Future Roadmap
+### Future Roadmap
 
 Our MVP proves the core concept. The next steps to build a production-ready system include:
 
@@ -68,7 +60,7 @@ Our MVP proves the core concept. The next steps to build a production-ready syst
 
 ---
 
-### 🧑‍💻 Authors
+### Authors
 **Ahana Banerjee** 
 **Prathik Kumar**   
 Contributors: Team DreamDeployers | MumbaiHacks 2025
