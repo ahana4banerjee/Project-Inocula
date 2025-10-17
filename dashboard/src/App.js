@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const API_URL = 'http://127.0.0.1:8000';
 
-// --- STYLES (Embedded for a clean, modern UI) ---
+// --- STYLES ---
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
   body { 

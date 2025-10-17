@@ -1,4 +1,3 @@
-// A more reliable way to grab content and return it.
 (() => {
     const articleTitle = document.title || 'No title found';
 

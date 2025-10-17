@@ -22,22 +22,21 @@ explainer_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 # --- AI AGENT INITIALIZATION ---
 print("Loading AI agents from Hugging Face Hub...")
 
-# We are now pointing back to the online model names
 detector_agent = pipeline(
     "text-classification", 
     model="unitary/toxic-bert", # The online name
     return_all_scores=True,
-    token=HF_TOKEN # Use the token for authenticated download
+    token=HF_TOKEN 
 )
 
 analyzer_agent = pipeline(
     "text-classification", 
     model="j-hartmann/emotion-english-distilroberta-base",
     return_all_scores=True,
-    token=HF_TOKEN # Use the token for authenticated download
+    token=HF_TOKEN 
 )
 
-print("✅ AI agents loaded successfully.")
+print(" AI agents loaded successfully.")
 
 # --- DATABASE & CACHE CONNECTIONS ---
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_CONNECTION_STRING)
@@ -46,7 +45,7 @@ analysis_collection = db.get_collection("analyses")
 reports_collection = db.get_collection("reports")
 feedback_collection = db.get_collection("feedback")
 
-# --- PYDANTIC MODELS (Data Shapes) ---
+# --- PYDANTIC MODELS ---
 class AnalysisRequest(BaseModel):
     text: str
 class AnalysisResponse(BaseModel):
@@ -109,7 +108,7 @@ def read_root(): return {"message": "Project Inocula API is running!"}
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_text(request: AnalysisRequest):
     score, reasons, status = 100, [], "quick_analysis_complete"
-    # Heuristics & AI Agents... (logic is unchanged)
+    # Heuristics & AI Agents
     all_caps_words = [word for word in request.text.split() if word.isupper() and len(word) > 2]
     if len(all_caps_words) > 0:
         score -= 25; reasons.append(f"Contains capitalized words suggesting urgency: {', '.join(all_caps_words)}")
@@ -145,7 +144,7 @@ async def submit_feedback(feedback: FeedbackRequest):
     await feedback_collection.insert_one({"analysis_id": ObjectId(feedback.analysis_id), "is_helpful": feedback.is_helpful, "timestamp": datetime.now()})
     return {"message": "Feedback received."}
 
-# --- NEW ADMIN ENDPOINTS ---
+# --- ADMIN ENDPOINTS ---
 @app.get("/reports")
 async def get_all_reports():
     # This pipeline joins reports with their original analysis for context

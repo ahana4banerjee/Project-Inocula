@@ -17,7 +17,7 @@ analyzeButton.addEventListener('click', async () => {
 
     const pageContent = injectionResult.result;
     const textToAnalyze = `${pageContent.title}. ${pageContent.paragraph}`;
-    console.log("Sending to backend:", textToAnalyze); // <-- ADD THIS LINE
+    console.log("Sending to backend:", textToAnalyze); 
 
     reasonText.innerText = "Analyzing...";
 

@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 
-// Register Chart.js components
+// Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const API_URL = 'http://127.0.0.1:8000';
 
-// --- STYLES --- (Embedded for simplicity)
+// --- STYLES --- 
 const styles = `
   body { font-family: sans-serif; background-color: #f0f2f5; margin: 0; }
   .admin-dashboard { display: flex; }
@@ -177,10 +177,9 @@ function App() {
       // Then, set up an interval to refetch every 10 seconds (10000 ms)
     const intervalId = setInterval(fetchData, 10000);
 
-    // This is a cleanup function that React runs when the component unmounts
     // It stops the interval to prevent memory leaks.
     return () => clearInterval(intervalId);
-  }, []); // The empty array ensures this effect runs only once on mount
+  }, []); 
   
   
   const renderView = () => {
