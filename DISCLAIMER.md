@@ -5,7 +5,7 @@ It is designed to **assist users** in identifying potentially misleading or mani
 
 ---
 
-### ⚠️ Important Notes
+###  Important Notes
 
 1. **Accuracy Limitations**  
    - The AI models used (e.g., emotion detectors, text classifiers, LLM explainers) are trained on general datasets.  
