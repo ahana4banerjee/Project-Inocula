@@ -24,14 +24,14 @@ print("Loading AI agents from Hugging Face Hub...")
 
 detector_agent = pipeline(
     "text-classification", 
-    model="unitary/toxic-bert", # The online name
+    model="./toxic-bert", # The online name
     return_all_scores=True,
     token=HF_TOKEN 
 )
 
 analyzer_agent = pipeline(
     "text-classification", 
-    model="j-hartmann/emotion-english-distilroberta-base",
+    model="./emotion-english-distilroberta-base",
     return_all_scores=True,
     token=HF_TOKEN 
 )
