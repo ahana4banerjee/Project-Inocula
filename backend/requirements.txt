@@ -1,0 +1,7 @@
+fastapi[all]
+motor
+python-dotenv
+transformers[torch]
+google-generativeai
+redis
+huggingface_hub

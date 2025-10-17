@@ -1,0 +1,141 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.App {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+h1, h2, h3 {
+    color: #0056b3;
+}
+
+header {
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.scan-list {
+    margin-top: 30px;
+}
+
+.scan-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.scan-item:hover {
+    background-color: #f9f9f9;
+}
+
+.scan-score {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    flex-shrink: 0;
+}
+
+.scan-text {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.error-message {
+    color: #d9534f;
+    text-align: center;
+}
+
+/* Detail View Styling */
+.detail-view {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 1em;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.detail-score-box {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.detail-score {
+    font-size: 3em;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.detail-explanation {
+    font-size: 1.1em;
+    font-style: italic;
+    margin: 0;
+}
+
+.reasons-list {
+    padding-left: 20px;
+}
+
+.reasons-list li {
+    margin-bottom: 10px;
+}
+
+.actions {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    text-align: center;
+}
+
+.feedback-button, .report-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+.feedback-button.helpful { background-color: #28a745; }
+.feedback-button.not-helpful { background-color: #ffc107; }
+.report-button { background-color: #dc3545; }
