@@ -1,8 +1,6 @@
 from transformers import pipeline
 from agents.state import AgentState
 
-# Load the model once when the module is imported
-# Use the local path if you downloaded it, otherwise use the repo name
 print("Loading Analyzer Agent (emotion-distilroberta)...")
 emotion_pipeline = pipeline(
     "text-classification", 
@@ -12,32 +10,26 @@ emotion_pipeline = pipeline(
 
 def analyzer_node(state: AgentState):
     """
-    Analyzes the text for emotional triggers like anger and fear.
-    Deducts score based on detected manipulative patterns.
+    Deducts points from the score established by the detector.
     """
     text = state["input_text"]
     current_score = state.get("score", 100)
     
-    # Run the model
     results = emotion_pipeline(text)[0]
     
     found_emotions = []
     new_reasons = []
-    score_deduction = 0
+    deduction = 0
     
-    # Check specifically for 'anger' and 'fear' (common misinfo triggers)
+    # Anger and Fear are major red flags for manipulation
     for entry in results:
-        if entry['label'] in ['anger', 'fear'] and entry['score'] > 0.6:
+        if entry['label'] in ['anger', 'fear'] and entry['score'] > 0.4:
             found_emotions.append(entry['label'])
-            new_reasons.append(
-                f"Psychological trigger detected: {entry['label'].upper()} "
-                f"(Confidence: {int(entry['score']*100)}%)"
-            )
-            score_deduction += 15
+            new_reasons.append(f"Emotional trigger: {entry['label'].upper()}")
+            deduction += 15
     
-    # Return updates to the state
     return {
         "detected_emotions": found_emotions,
         "reasons": new_reasons,
-        "score": max(0, current_score - score_deduction)
+        "score": max(0, current_score - deduction)
     }

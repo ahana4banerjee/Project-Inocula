@@ -3,43 +3,67 @@ from agents.state import AgentState
 from agents.detector import detector_node
 from agents.analyzer import analyzer_node
 from agents.explainer import explainer_node
+from agents.fallacy import fallacy_node # Import the new node
+from agents.memory import search_memory
 
-# 1. Initialize the StateGraph with our custom AgentState
+# 1. Define the Memory Node (Unchanged)
+def memory_node(state: AgentState):
+    text = state["input_text"]
+    match = search_memory(text)
+    if match:
+        return {
+            "is_memory_hit": True,
+            "memory_context": match["label"],
+            "score": 0,
+            "reasons": ["Historical Match: This claim matches a previously debunked narrative."]
+        }
+    return {"is_memory_hit": False}
+
+# 2. Define the Routing Logic (Unchanged)
+def route_after_memory(state: AgentState):
+    if state.get("is_memory_hit"):
+        return "explainer"
+    return "detector"
+
+# 3. Build the Graph
 workflow = StateGraph(AgentState)
 
-# 2. Add our nodes (the agents we built)
+# Add all nodes including the new Fallacy node
+workflow.add_node("memory", memory_node)
 workflow.add_node("detector", detector_node)
 workflow.add_node("analyzer", analyzer_node)
+workflow.add_node("fallacy", fallacy_node) # Registered here
 workflow.add_node("explainer", explainer_node)
 
-# 3. Define the edges (the flow of information)
-# Our flow: Start -> Detector -> Analyzer -> Explainer -> End
-workflow.set_entry_point("detector")
+# 4. Define the updated flow
+workflow.set_entry_point("memory")
+
+workflow.add_conditional_edges(
+    "memory",
+    route_after_memory,
+    {
+        "explainer": "explainer",
+        "detector": "detector"
+    }
+)
+
+# New sequence: Detector -> Analyzer -> Fallacy -> Explainer
 workflow.add_edge("detector", "analyzer")
-workflow.add_edge("analyzer", "explainer")
+workflow.add_edge("analyzer", "fallacy") # Analyzer now flows to Fallacy
+workflow.add_edge("fallacy", "explainer") # Fallacy flows to Explainer
 workflow.add_edge("explainer", END)
 
-# 4. Compile the graph into a runnable application
 app_graph = workflow.compile()
 
-print("✅ Intelligence Graph compiled successfully.")
-
 def run_inocula_agent(text: str):
-    """
-    The main entry point to run the entire agentic pipeline.
-    """
-    # Initial state
     initial_state = {
         "input_text": text,
         "reasons": [],
         "detected_emotions": [],
         "score": 100,
         "explanation": "",
-        "metadata": {}
+        "metadata": {},
+        "is_memory_hit": False,
+        "memory_context": ""
     }
-    
-    # Run the graph
-    # thread_id can be used later for multi-turn conversations
-    final_state = app_graph.invoke(initial_state)
-    
-    return final_state
+    return app_graph.invoke(initial_state)
