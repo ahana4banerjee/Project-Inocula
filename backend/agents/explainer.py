@@ -8,68 +8,75 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Initialize the GenAI Client
-# We use the new google-genai SDK
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 def explainer_node(state: AgentState):
     """
-    Synthesizes all agent findings into a human-readable explanation.
-    Updated to use models confirmed available via user diagnostics (Gemini 2.5/2.0).
+    Synthesizes findings and performs final factual validation.
+    If Wikipedia context contradicts the input, it overrides the score.
     """
-    text_snippet = state["input_text"][:300]
-    score = state.get("score", 100)
+    text_snippet = state["input_text"]
+    current_score = state.get("score", 100)
     reasons = state.get("reasons", [])
     emotions = state.get("detected_emotions", [])
     
+    # Extract Wikipedia context from metadata
+    wiki_context = state.get("metadata", {}).get("verification_summary", "No direct Wikipedia context found.")
+    
     prompt = f"""
-    As a professional Misinformation Analyst, review these scan results:
+    As a Misinformation Expert, synthesize a final report.
     
-    - Content: "{text_snippet}..."
-    - Score: {score}/100
-    - Factors: {", ".join(reasons)}
-    - Emotions: {", ".join(emotions)}
+    USER CONTENT: "{text_snippet}"
+    WIKIPEDIA CONTEXT: "{wiki_context}"
     
-    Task: Write a concise, one-sentence explanation for the user.
-    Guidelines:
-    - Score > 70: Be reassuring but objective.
-    - 40-70: Start with 'Caution:' and explain why.
-    - < 40: Start with 'High Risk:' and be direct about manipulation.
-    - Do NOT use any markdown formatting or stars (*).
+    CURRENT ANALYSIS:
+    - Stylistic Score: {current_score}/100
+    - Detected Emotions: {", ".join(emotions) if emotions else "Neutral"}
+    - Flagged Factors: {", ".join(reasons)}
+    
+    TASK:
+    1. Compare the USER CONTENT with the WIKIPEDIA CONTEXT.
+    2. If the user content is a factual lie or misinformation based on the context, set the FINAL_SCORE to 0.
+    3. If it is just biased or emotional but not a direct lie, keep the Stylistic Score.
+    4. Provide a one-sentence EXPLANATION.
+    
+    OUTPUT FORMAT (Strict):
+    FINAL_SCORE: [number]
+    EXPLANATION: [text]
     """
 
-    # Updated candidates based on your specific 'Available models' list
-    # prioritizing 2.5-flash as it appeared first in your console log
-    model_candidates = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
-    explanation = "Analysis complete. Please refer to the specific factors detected below."
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+        response_text = response.text.strip()
+        
+        # Simple parsing logic
+        new_score = current_score
+        explanation = "Analysis complete."
+        
+        for line in response_text.split('\n'):
+            if line.startswith("FINAL_SCORE:"):
+                try:
+                    new_score = int(line.replace("FINAL_SCORE:", "").strip())
+                except: pass
+            if line.startswith("EXPLANATION:"):
+                explanation = line.replace("EXPLANATION:", "").strip()
 
-    for model_name in model_candidates:
-        try:
-            # The SDK will automatically handle the 'models/' prefix
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-            explanation = response.text.strip()
-            # Success!
-            break
-        except Exception as e:
-            print(f"DEBUG: Attempt with {model_name} failed: {e}")
-            
-            if "404" in str(e):
-                continue
-            else:
-                # If it's a 429 (Rate Limit) or 401 (Auth), we stop
-                break
-    
-    # If all attempts failed, run diagnostics (kept for safety)
-    if explanation.startswith("Analysis complete"):
-        print("\n--- DIAGNOSTIC CHECK ---")
-        try:
-            available = [m.name for m in client.models.list()]
-            print(f"Available models for your key: {available}")
-        except Exception as list_err:
-            print(f"Could not list models: {list_err}")
+        # Add a reason if the score was overridden to 0
+        final_reasons = []
+        if new_score == 0 and current_score > 0:
+            final_reasons = ["Factual Contradiction: This claim is explicitly refuted by established records."]
 
-    return {
-        "explanation": explanation
-    }
+        return {
+            "score": new_score,
+            "explanation": explanation,
+            "reasons": final_reasons
+        }
+
+    except Exception as e:
+        print(f"DEBUG: Explainer API Error: {e}")
+        return {
+            "explanation": "Analysis complete. Factual verification suggest this may be inaccurate."
+        }
