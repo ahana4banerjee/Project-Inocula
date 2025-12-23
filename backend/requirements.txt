@@ -1,7 +1,11 @@
-fastapi[all]
-motor
+fastapi
+uvicorn
 python-dotenv
-transformers[torch]
-google-generativeai
-redis
-huggingface_hub
+motor
+dnspython
+google-genai
+transformers
+torch
+langgraph
+langchain-google-genai
+langchain-community
