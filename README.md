@@ -1,58 +1,203 @@
-# Project Inocula 
-
-A Digital Immune System Against Misinformation for **Mumbai Hacks 2025**
-
----
-
-###  The Problem
-
-Misinformation spreads faster than facts, manipulating public opinion, fueling panic, and eroding trust—especially during crises.  
-Current fact-checking systems are **reactive**, addressing fake news only after it has gone viral and the damage is done.
+# Project Inocula  
+**An Agentic AI System for Misinformation & Psychological Manipulation Detection**
 
 ---
 
-###  Our Solution: A Proactive Immune System
+## Overview
+**Project Inocula** is an **agentic AI pipeline** designed to detect **misinformation, psychological manipulation, and deceptive narratives** in digital content.
 
-**Project Inocula** is an Agentic AI system that acts like a digital immune system for the internet.  
-Instead of just reacting to lies, it proactively identifies emerging misinformation campaigns, analyzes their psychological tactics, and warns users before they are exposed — building cognitive resistance.
+Instead of relying on a single LLM call, Inocula uses **multiple reasoning agents**, semantic memory, and traditional ML models to analyze *how* misinformation works — emotionally, logically, and contextually.
 
----
-
-### Features (Hackathon MVP)
-
-Our fully functional prototype demonstrates the end-to-end flow of our system:
-
-- **Browser Extension:** Extracts content from any live webpage for on-demand analysis.  
-- **Multi-Agent AI Backend:** A FastAPI server orchestrating multiple AI agents:
-  - **Heuristics Engine:** Detects obvious clickbait (e.g., excessive caps/punctuation).
-  - **Detector Agent:** A *toxic-bert* model analyzing harmful patterns (proxy for misinformation).
-  - **Analyzer Agent:** Emotion-detection model identifying manipulative tactics (fear, anger).
-  - **Explainer Agent:** A Gemini-powered LLM that summarizes the findings in plain English.
-- **User Dashboard:** View scan history and submit reports for re-evaluation.
-- **Admin Dashboard:** Review reports, view analytics, and flag to official moderation APIs.
+This project prioritizes **architecture, reasoning depth, and correctness** over quick demos.
 
 ---
 
-### Tech Stack
+## Core Philosophy
+Most systems ask:
+> *“Is this content true or false?”*
 
-**Frontend:** React, Chart.js, Chrome Extension SDK (Manifest V3)  
-**Backend:** Python (FastAPI)  
-**AI Models:** Hugging Face Transformers (toxic-bert, emotion-english), Google Gemini  
-**Database:** MongoDB Atlas  
-**Deployment:** Render (Backend), Netlify (Frontend)
+Inocula asks:
+- How is this content manipulating emotions?
+- Which logical fallacies are being used?
+- Has this narrative appeared before in a different form?
+- What evidence supports or contradicts the claims?
+
+---
+
+## System Architecture
+
+### High-Level Flow
+```text
+┌────────────┐
+│ Input │
+│ (Text/Web) │
+└─────┬──────┘
+│
+▼
+┌─────────────────┐
+│ Detector Agent │
+│ Risk + Confidence│
+└─────┬───────────┘
+│
+▼
+┌────────────────────────────┐
+│ Analyzer Agent │
+│ - Emotional Manipulation │
+│ - Logical Fallacies │
+│ - False Authority │
+└─────┬──────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Verifier Agent │
+│ - Wikipedia API │
+│ - Fact Check Sources │
+└─────┬──────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Explainer Agent │
+│ Structured Reasoning Output│
+└──────────┬─────────────────┘
+▼
+Final Insight
+
+```
 
 ---
 
-### Future Roadmap
+### Agent Collaboration Model
+```text
+           ┌──────────────────────┐
+           │   Shared Memory      │
+           │     (MongoDB)        │
+           └─────────┬────────────┘
+                     │
+     ┌───────────────┼───────────────┐
+     │               │               │
+┌───────────┐  ┌───────────┐  ┌───────────┐
+│ Detector  │  │ Analyzer  │  │ Verifier  │
+│   Agent   │  │   Agent   │  │   Agent   │
+└─────┬─────┘  └─────┬─────┘  └─────┬─────┘
+      │              |              │
+      └──────────────┴─────────────-┘
+                      │
+              ┌──────────────┐
+              │  Explainer   │
+              │    Agent     │
+              └──────┬───────┘
+                     │
+           Final Reasoned Output
 
-Our MVP proves the core concept. The next steps to build a production-ready system include:
+```
 
-- **Proactive Scanning Worker:** Continuously monitors high-risk sources (Reddit, X).  
-- **Fact-Checking API Integration:** Cross-references with trusted sources (PolitiFact, Google Fact Check).  
-- **User Authentication:** Personalized history, credibility levels, and feedback loops.  
-- **Real-Time Notifications:** WebSocket updates when a trending misinformation topic is detected.
+Agents operate **statefully**, read from shared memory, and collaborate instead of working in isolation.
 
 ---
+
+### Semantic Memory Layer (Planned)
+
+
+```text
+New Content
+│
+▼
+Generate Embedding
+│
+▼
+FAISS Vector Store
+│
+├── High Similarity → Early Warning
+│
+▼
+Agent Pipeline
+```
+
+---
+
+## Current Status
+**Early Development / Foundation Phase**
+
+- Agentic refactor in progress
+- No deployment yet (intentional)
+- Focus on:
+  - Correct agent boundaries
+  - Tool usage
+  - Reasoning transparency
+  - Memory design
+
+---
+
+## Roadmap 
+
+### Phase 1 — Agentic Core
+- LangGraph-based orchestration
+- Stateful agents with memory
+- Tool-calling support
+- MongoDB-backed state
+
+### Phase 2 — Semantic Memory (current)
+- FAISS vector database
+- Sentence-transformer embeddings
+- Narrative similarity detection
+
+### Phase 3 — Psychological Manipulation ML
+- Custom ML classifiers:
+  - Emotional manipulation
+  - Logical fallacies
+- Traditional ML + LLM hybrid
+
+### Phase 4 — Proactive Scanning
+- Background analysis
+- Async processing (FastAPI + Celery)
+- Risk-threshold triggers
+
+### Phase 5 — Multilingual Intelligence
+- Language detection
+- IndicBERT / mBERT routing
+- Indian regional languages
+
+### Phase 6 — Dashboards & Insights
+- User exposure profiles
+- Emotion trends
+- Narrative clustering
+
+### Phase 7 — Engineering Polish
+- Dockerization
+- Evaluation metrics
+- Ethical AI documentation
+
+---
+
+## Tech Stack
+- **Agent Framework**: LangGraph / LangChain  
+- **LLMs**: Gemini (free tier), HuggingFace models  
+- **ML**: scikit-learn / PyTorch  
+- **Vector Store**: FAISS (local)  
+- **Backend**: FastAPI  
+- **Async**: Celery + Redis (local)  
+- **Database**: MongoDB  
+- **Frontend (Planned)**: Chrome Extension + Analytics Dashboard  
+
+---
+
+## Why Inocula Stands Out
+- Agentic reasoning instead of single-shot LLM calls
+- Semantic memory for repeated misinformation
+- Hybrid ML + LLM pipeline
+- Psychological manipulation focus
+- Proactive detection design
+- Multilingual, India-relevant scope
+
+---
+
+## Repository Notes
+- Active development repository
+- Commit history reflects learning and iteration
+- Deployment will occur **after core reasoning layers stabilize**
+
+---
+
 
 ### 📜 Additional Docs
 - [Disclaimer & Ethics](./DISCLAIMER.md)  
@@ -60,9 +205,13 @@ Our MVP proves the core concept. The next steps to build a production-ready syst
 
 ---
 
-### Authors
+### Author
 **Ahana Banerjee** 
-**Prathik Kumar**   
-Contributors: Team DreamDeployers | MumbaiHacks 2025
+Electronics & Communication Engineering  
+Interests: Agentic AI, NLP, ML systems
+
+---
+
+> *Inocula is built to reason before it reacts.*
 
 ---
