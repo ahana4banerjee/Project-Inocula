@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.concurrency import run_in_threadpool
+from celery.result import AsyncResult
 from datetime import datetime
 import motor.motor_asyncio
 from os import getenv
@@ -10,22 +10,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from bson import ObjectId
 import logging
 
-# Import Agents
-from agents.graph import run_inocula_agent
-from agents.chat import run_chat_followup # New Chat Agent
+# 1. Import the Celery app and task from your worker file
+from celery_worker import celery_app, analyze_misinformation_task
+from agents.chat import run_chat_followup
 
 load_dotenv()
-app = FastAPI(title="Project Inocula API", version="2.0.0")
+logger = logging.getLogger(__name__)
 
+app = FastAPI(title="Project Inocula - Async API")
+
+# Enable CORS for Extension and Dashboards
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True, 
-    allow_methods=["*"], 
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- DB SETUP ---
+# --- DATABASE SETUP ---
 client = motor.motor_asyncio.AsyncIOMotorClient(getenv("MONGO_CONNECTION_STRING"))
 db = client.project_inocula
 analysis_collection = db.get_collection("analyses")
@@ -41,54 +44,81 @@ class ChatRequest(BaseModel):
 # --- ENDPOINTS ---
 
 @app.post("/analyze")
-async def analyze_text(request: AnalysisRequest, background_tasks: BackgroundTasks):
-    # (Existing analysis logic stays the same)
-    final_state = await run_in_threadpool(run_inocula_agent, request.text)
+async def analyze_text(request: AnalysisRequest):
+    """
+    Step 1: Start the Async Task.
+    This sends the text to Redis and returns a task_id immediately.
+    """
+    try:
+        # Trigger the Celery task (.delay() is what makes it async)
+        task = analyze_misinformation_task.delay(request.text)
+        return {"task_id": task.id, "status": "processing"}
+    except Exception as e:
+        logger.error(f"Failed to queue task: {e}")
+        raise HTTPException(status_code=500, detail="Could not queue the AI analysis task.")
+
+@app.get("/status/{task_id}")
+async def get_task_status(task_id: str):
+    task_result = AsyncResult(task_id, app=celery_app)
     
-    result = {
-        "score": final_state.get("score", 0),
-        "reasons": final_state.get("reasons", []),
-        "explanation": final_state.get("explanation", ""),
-        "detected_emotions": final_state.get("detected_emotions", [])
-    }
+    if task_result.state == 'PENDING':
+        return {"status": "pending"}
+    elif task_result.state == 'STARTED':
+        return {"status": "processing"}
+    elif task_result.state == 'SUCCESS':
+        result_data = task_result.result
+        
+        # Ensure we don't save duplicates
+        existing = await analysis_collection.find_one({"task_id": task_id})
+        
+        if not existing:
+            doc = {
+                "task_id": task_id,
+                "timestamp": datetime.now(),
+                "request_text": "Remote Scan Result", # You can pass text in the task result if needed
+                "result": result_data,
+                "status": "complete"
+            }
+            inserted = await analysis_collection.insert_one(doc)
+            result_data["analysis_id"] = str(inserted.inserted_id)
+
+        return {"status": "completed", "result": result_data}
     
-    # Save to DB and get the ID back so user can chat with it
-    doc = {
-        "timestamp": datetime.now(),
-        "request_text": request.text,
-        "result": result,
-        "status": "complete"
-    }
-    inserted = await analysis_collection.insert_one(doc)
+    # Handle failures
+    elif task_result.state == 'FAILURE':
+        return {"status": "failed", "error": str(task_result.info)}
     
-    # Return result with the new analysis_id
-    return {**result, "analysis_id": str(inserted.inserted_id)}
+    return {"status": task_result.state}
 
 @app.post("/chat")
 async def chat_with_analysis(request: ChatRequest):
     """
-    NEW: Allows users to ask follow-up questions about a specific analysis.
-    This fulfills the 'State Management / Thread Persistence' task in Phase 1.
+    Allows follow-up questions about a specific analysis.
     """
     try:
-        # 1. Retrieve the previous analysis from MongoDB
         analysis = await analysis_collection.find_one({"_id": ObjectId(request.analysis_id)})
-        
         if not analysis:
             raise HTTPException(status_code=404, detail="Analysis session not found.")
             
-        # 2. Use the Chat Agent to generate a contextual response
         answer = await run_chat_followup(analysis, request.message)
-        
         return {"answer": answer}
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/history")
 async def get_history():
-    cursor = analysis_collection.find().sort("timestamp", -1).limit(20)
-    history = await cursor.to_list(length=20)
-    for item in history:
-        item["_id"] = str(item["_id"])
-    return history
+    """
+    Returns the most recent analyses.
+    """
+    try:
+        cursor = analysis_collection.find().sort("timestamp", -1).limit(20)
+        history = await cursor.to_list(length=20)
+        for item in history:
+            item["_id"] = str(item["_id"])
+        return history
+    except Exception as e:
+        return []
+
+@app.get("/")
+def read_root():
+    return {"status": "online", "engine": "Celery Distributed Queue"}
